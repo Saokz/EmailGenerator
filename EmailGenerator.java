@@ -1,24 +1,23 @@
-import java.awt.AWTException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Scanner;
 
 public class EmailGenerator {
 
     private final int MAX_STUDENT_ID_LENGTH = 100000;
     private final int MAX_YEAR_DIFFERENCE = 4;
     
-    private int yearMax, yearMin, rowMin, rowMax, maxDuplicates;
+    private int yearMax, yearMin, rowMin, rowMax;
     private FileWriter writer;
     private ArrayList<Integer> studentIDs;
     
     public EmailGenerator() throws FileNotFoundException, IOException
     {
-    	yearMax = 0; yearMin = 0; rowMin = 0; rowMax = 0; maxDuplicates = 0;
+    	yearMax = 0; yearMin = 0;
+    	rowMin = 0; rowMax = 0;
     	studentIDs = new ArrayList<Integer>();
     	File file = new File("emails.txt");
         if (!file.exists())
@@ -26,11 +25,10 @@ public class EmailGenerator {
         writer = new FileWriter(file);
     }
     
-    public EmailGenerator(int yearMin, int yearMax, int rowMin, int rowMax, int maxDuplicates) throws FileNotFoundException, IOException
+    public EmailGenerator(int yearMin, int yearMax, int rowMin, int rowMax) throws FileNotFoundException, IOException
     {
     	this.yearMin = yearMin; this.yearMax = yearMax; 
     	this.rowMin = rowMin; this.rowMax = rowMax;
-    	this.maxDuplicates = maxDuplicates;
     	
     	studentIDs = new ArrayList<Integer>();
     	File file = new File("Emails.txt");
@@ -39,40 +37,61 @@ public class EmailGenerator {
     	writer = new FileWriter(file);
     }
     
-    public void generateIDs()
+    public int generateNewID()
+    {
+    	return MAX_STUDENT_ID_LENGTH + ( yearMin + (int)(Math.random() * ((yearMax - yearMin) + 1)) ) * ((int)Math.pow(10, 4))
+                + ( rowMin + (int)( Math.random() * ( (rowMax - rowMin) + 1 ) ) );
+    }
+    
+    public void generateIDList()
     {
     	System.out.println("Starting...");
     	
-    	int duplicates = 0;
     	int count = 0;
-        while(duplicates <= maxDuplicates)
+        while(studentIDs.size() < getPredictedListLength())
         {
-        	int studentID = MAX_STUDENT_ID_LENGTH + ( yearMin + (int)(Math.random() * ((yearMax - yearMin) + 1)) ) * ((int)Math.pow(10, 4))
-                    + ( rowMin + (int)( Math.random() * ( (rowMax - rowMin) + 1 ) ) );
+        	int studentID = generateNewID();
         	
         	if(studentIDs.isEmpty())
         	{
         		studentIDs.add(studentID);
+        		
         		count++;
         		System.out.println(studentID + " created");
         	}
-        	//Need to add items to the list AFTER I'm done reading through it
-        	for(int i: studentIDs)
+        	
+        	for(int i = 0; i < studentIDs.size(); i++)
         	{
-        		if(studentID == i)
+        		if (studentID == studentIDs.get(i) )
         		{
-        			duplicates++;
-        		}else
-        		{
-        			studentIDs.add(studentID);
-        			count++;
-        			System.out.println(studentID + " created");
+        			System.out.println();
+        			System.out.println("Duplicate found: " + studentID);
+        			
+        			studentID = generateNewID();
+        			
+        			System.out.println("Generating new ID: " + studentID);
+        			System.out.println();
+        			
+        			i = 0;
         		}
         	}
+        	studentIDs.add(studentID);
+        	
+        	System.out.println(studentID + " created");
+        	count++;
+        	
         }
-        System.out.println(count + " IDs created.");
+        System.out.println("generated " + count + " IDs");
         System.out.println("Sorting...");
+        
         Collections.sort(studentIDs);
+        
+        System.out.println("Done.");
+    }
+    
+    public int getPredictedListLength()
+    {
+    	return (rowMax - rowMin + 1) * (yearMax - yearMin + 1);
     }
     
     public boolean checkParameters()
@@ -83,14 +102,14 @@ public class EmailGenerator {
     
     public boolean checkParameters(int[] emailInfo)
     {
-    	return emailInfo.length == 5 && emailInfo[0] < emailInfo[1] &&
+    	return emailInfo.length == 4 && emailInfo[0] < emailInfo[1] &&
     		   emailInfo[2] < emailInfo[3] &&
     		   emailInfo[1] - emailInfo[0] <= MAX_YEAR_DIFFERENCE;
     }
     
     public int[] getParameters()
     {
-    	return new int[] {yearMin, yearMax, rowMin, rowMax, maxDuplicates};
+    	return new int[] {yearMin, yearMax, rowMin, rowMax};
     }
     
     public void setParameters(int[] emailInfo)
@@ -104,7 +123,6 @@ public class EmailGenerator {
     	emailInfo[1] = yearMax;
     	emailInfo[2] = rowMin;
     	emailInfo[3] = rowMax;
-    	emailInfo[4] = maxDuplicates;
     }
     
     public void writeEmailsToFile()throws IOException
