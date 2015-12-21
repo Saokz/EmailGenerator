@@ -94,6 +94,11 @@ public class EmailGenerator {
     	return (rowMax - rowMin + 1) * (yearMax - yearMin + 1);
     }
     
+    public int getPredictedListLength(int rowMin, int rowMax, int yearMin, int yearMax)
+    {
+    	return (rowMax - rowMin + 1) * (yearMax - yearMin + 1);
+    }
+    
     public boolean checkParameters()
     {
     	return yearMin <= yearMax && rowMin <= rowMax && 
@@ -123,6 +128,11 @@ public class EmailGenerator {
     	emailInfo[1] = yearMax;
     	emailInfo[2] = rowMin;
     	emailInfo[3] = rowMax;
+    }
+    
+    public ArrayList<Integer> getStudentIDs()
+    {
+    	return studentIDs;
     }
     
     public void writeEmailsToFile()throws IOException
